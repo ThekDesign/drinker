@@ -1,7 +1,7 @@
 <template>
     <div class="wrap">
         <div class="search">
-            <input type="text" class="searchTerm" placeholder="想喝水嗎？" @keyup.enter="searching">
+            <input type="text" class="searchTerm" placeholder="ex: 大安" @keyup.enter="searching">
             <button type="submit" class="searchButton" @click="searching">
                 <i class="fa fa-search"></i>
             </button>
@@ -14,73 +14,22 @@
 
 <script>
     import swal from 'sweetalert';
-    import $ from 'jquery';
+    import _ from 'lodash';
+    import Vue from 'vue';
 
     export default {
-        props: ['msg'],
+        props: ['places', 'placename', 'address', 'longitude', 'latitude', 'Administrativearea', 'getlocation', 'autocomplete_text'],
         name: 'search',
         data() {
             return {
-                getplace: [],
-                allplace: [],
-                placename: [],
-                address: [],
-                longitude: [],
-                latitude: [],
-                getlocation: [],
-                autocomplete_text: [],
+                suggestions: [],
             }
         },
         methods: {
-            getInfo(allplace) {
-                this.placedata(allplace);
-            },
-            placedata(allplace) {
-                //從Firebase拿取資料(Object)換成Array的形式push到自己定義的陣列中
-                for (let j = 0; j < Object.values(allplace).length; j++) {
-                    this.placename[j] = allplace[`${j}`]['場所名稱'];
-                    this.address[j] = allplace[`${j}`]['場所地址'];
-                    this.opentime[j] = allplace[`${j}`]['場所開放時間'];
-                    this.management[j] = allplace[`${j}`]['管理單位'];
-                    this.longitude[j] = allplace[`${j}`]['經度'];
-                    this.latitude[j] = allplace[`${j}`]['緯度'];
-                    this.Administrativearea[j] = allplace[`${j}`]['行政區'];
-                    this.setplace[j] = allplace[`${j}`]['設置地點'];
-                    this.connect[j] = allplace[`${j}`]['連絡電話'];
-                    this.numberofdrinker[j] = allplace[`${j}`]['飲水台數'];
-
-                    //從這邊拿取經緯度
-                    this.getlocation[j] = {
-                        "lat": this.latitude[j],
-                        "lng": this.longitude[j]
-                    };
-                    //Autocomplete的部份，去除重複元素，搜尋範圍限制在開頭文字
-                    this.autocomplete_text.push(this.placename[j], this.address[j], this.Administrativearea[j]);
-                }
-                //autocomplete use data
-                this.autocompletes();
-            },
-            autocompletes: function() {
-                //去除重複元素
-                ac_text = this.autocomplete_text;
-                result = ac_text.filter(function(element, index, arr) {
-                    return arr.indexOf(element) === index;
-                });
-                //限制成開頭
-                $('.searchTerm').autocomplete({
-                    source: function(request, response) {
-                        matcher = new RegExp("^" + $.ui.autocomplete.escapeRegex(request.term), "i");
-                        response($.grep(result, function(item) {
-                            return matcher.test(item);
-                        }));
-                    }
-                });
-            },
             searching: function() {
-                console.log(this.msg);
                 let search_success = false;
                 let searchloacation = [];
-                let s_allplace = this.getplace;
+                let s_allplace = this.places;
                 let s_placename = this.placename;
                 let s_address = this.address;
                 let s_latitude = this.latitude;
@@ -116,21 +65,21 @@
                         break;
                     } else if ($('.searchTerm').val() == s_Administrativearea[m]) {
 
-                        indices = [];
-                        element = `${$('.searchTerm').val()}`;
-                        idx = s_Administrativearea.indexOf(element);
+                        let indices = [];
+                        let element = `${$('.searchTerm').val()}`;
+                        let idx = s_Administrativearea.indexOf(element);
                         while (idx != -1) {
                             indices.push(idx);
                             idx = s_Administrativearea.indexOf(element, idx + 1);
                         }
-                        for (o = 0; o < indices.length; o++) {
+                        for (let o = 0; o < indices.length; o++) {
                             searchloacation.push({
                                 "lat": s_latitude[indices[o]],
                                 "lng": s_longitude[indices[o]]
                             });
                         }
-                        lat_center = this.CalculateAvgLat(searchloacation);
-                        lng_center = this.CalculateAvgLng(searchloacation);
+                        let lat_center = this.CalculateAvgLat(searchloacation);
+                        let lng_center = this.CalculateAvgLng(searchloacation);
                         this.aftersearch(searchloacation, lat_center, lng_center, 15);
                         $('html,body').animate({
                             scrollTop: $('#map').offset().top - 55
@@ -145,46 +94,41 @@
             },
             //搜尋框進行搜尋動作後要做的動作
             aftersearch: function(searchloacation, center_lat, center_lng, zoom) {
-                center = new google.maps.LatLng(center_lat, center_lng);
-                map = new google.maps.Map(document.getElementById('map'), {
+                let center = new google.maps.LatLng(center_lat, center_lng);
+                let map = new google.maps.Map(document.getElementById('map'), {
                     zoom: zoom,
                     center: center,
                     mapTypeId: google.maps.MapTypeId.ROADMAP
                 });
 
-                labels = 'D';
-                markers = searchloacation.map(function(location, i) {
+                let labels = 'D';
+                let markers = searchloacation.map(function(location, i) {
                     return new google.maps.Marker({
                         position: location,
                         label: labels[i % labels.length],
                     });
                 });
 
-                options = {
-                    imagePath: 'images/markers/m'
+                let options = {
+                    imagePath: 'assets/markers/m'
                 };
 
-                markerCluster = new MarkerClusterer(map, markers, options);
+                let markerCluster = new MarkerClusterer(map, markers, options);
             },
             CalculateAvgLat: function(searcharray) {
-                total_lat = 0;
-                for (m = 0; m < searcharray.length; m++) {
+                let total_lat = 0;
+                for (let m = 0; m < searcharray.length; m++) {
                     total_lat = total_lat + searcharray[m]['lat'];
-                    console.log(searcharray[m]['lat']);
                 }
-                avg_lat = total_lat / searcharray.length;
-                console.log(searcharray[0]['lat']);
-                console.log(total_lat);
-                console.log(avg_lat);
-                console.log(searcharray.length);
+                let avg_lat = total_lat / searcharray.length;
                 return avg_lat;
             },
             CalculateAvgLng: function(searcharray) {
-                total_lng = 0;
-                for (m = 0; m < searcharray.length; m++) {
+                let total_lng = 0;
+                for (let m = 0; m < searcharray.length; m++) {
                     total_lng = total_lng + searcharray[m]['lng'];
                 }
-                avg_lat = total_lng / searcharray.length;
+                let avg_lat = total_lng / searcharray.length;
                 return avg_lat;
             },
             refresh: function() {
@@ -192,27 +136,44 @@
             },
             //將標點點在地圖上的function
             initialize: function(locations) {
-                center = new google.maps.LatLng(25.04, 121.54);
-                map = new google.maps.Map(document.getElementById('map'), {
+                let center = new google.maps.LatLng(25.04, 121.54);
+                let map = new google.maps.Map(document.getElementById('map'), {
                     zoom: 12,
                     center: center,
                     mapTypeId: google.maps.MapTypeId.ROADMAP
                 });
 
-                labels = 'D';
-                markers = locations.map(function(location, i) {
+                let labels = 'D';
+                let markers = locations.map(function(location, i) {
                     return new google.maps.Marker({
                         position: location,
                         label: labels[i % labels.length],
                     });
                 });
 
-                options = {
+                let options = {
                     imagePath: 'assets/markers/m'
                 };
 
-                markerCluster = new MarkerClusterer(map, markers, options);
+                let markerCluster = new MarkerClusterer(map, markers, options);
             }
+        },
+        mounted: function() {
+            //去除重複元素
+            let result_placename = _.toArray(_.mapValues(this.autocomplete_text, "placename"));
+            let result_address = _.toArray(_.mapValues(this.autocomplete_text, "address"));
+            let result_Administrativearea = _.uniq(_.toArray(_.mapValues(this.autocomplete_text, "Administrativearea")));
+            let result = _.concat(result_placename, result_address, result_Administrativearea);
+            this.suggestions = result;
+
+            $('.searchTerm').autocomplete({
+                source: function(request, response) {
+                    let matcher = new RegExp("^" + $.ui.autocomplete.escapeRegex(request.term), "i");
+                    response($.grep(result, function(item) {
+                        return matcher.test(item);
+                    }));
+                }
+            });
         }
     }
 
@@ -277,28 +238,6 @@
         font-size: 1.2em;
         background-color: white;
         border: 0;
-    }
-
-    /*Css to target the dropdownbox*/
-
-    .ui-autocomplete {
-        color: #00B4CC;
-        font-size: 1.2em;
-        text-decoration: none;
-        background-color: white;
-        list-style-type: none;
-        width: 1.5rem;
-        cursor: pointer;
-        padding-left: 0.3rem;
-        li :hover {
-            padding-left: 0.3rem;
-            background-color: aliceblue;
-        }
-    }
-
-    .ui-helper-hidden-accessible {
-        display: none;
-        visibility: hidden;
     }
 
 </style>

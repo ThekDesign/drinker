@@ -6,7 +6,7 @@
                     <br>
                     <div class="ui-widget">
                         <label for="searchTerm"></label>
-                        <search :msg="message"></search>
+                        <search :places="places" :placename="placename" :address="address" :longitude="longitude" :latitude="latitude" :Administrativearea="Administrativearea" :getlocation="getlocation" :autocomplete_text="autocomplete_text"></search>
                     </div>
                 </div>
             </div>
@@ -25,7 +25,8 @@
             return {
                 message: 'Somethings'
             }
-        }
+        },
+        props: ['places', 'placename', 'address', 'longitude', 'latitude', 'Administrativearea', 'getlocation', 'autocomplete_text']
     }
 
 </script>
