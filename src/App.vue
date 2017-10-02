@@ -8,14 +8,34 @@
         <div class="collapse navbar-collapse navbar-collapse-center" id="navbarCollapse">
             <ul class="nav navbar-nav">
                 <li class="nav-item active">
-                    <router-link class="nav-link" to="/">首頁<span class="sr-only">(current)</span></router-link>
+                    <a class="nav-link" href="#">首頁<span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                <router-link class="nav-link" to="/connect" data-toggle="modal">聯繫</router-link>
+                    <a class="nav-link" href="#connectmodal" data-toggle="modal">聯繫</a>
                 </li>
             </ul>
         </div>
     </nav>
+
+       <!-- Modal -->
+    <div class="modal fade" id="connectmodal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">聯絡方式</h5>
+                    <button type="button" class="close">
+        </button>
+                </div>
+                <div class="modal-body">
+                    <p>手機：0900-000-000</p>
+                    <p>Facebook：kkkkkkkkk</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <maintitle v-if="loaded" :places="getplace" :placename="placename" :address="address" :longitude="longitude" :latitude="latitude" :Administrativearea="Administrativearea" :getlocation="getlocation" :autocomplete_text="autocomplete_text"></maintitle>
     <maps v-if="loaded" :locations="getlocation"></maps>

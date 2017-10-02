@@ -10,6 +10,7 @@ import './assets/js/vendor/popper.min.js'
 import './assets/js/ie10-viewport-bug-workaround.js'
 import './assets/js/markerclusterer.js'
 
+
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
